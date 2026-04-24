@@ -2,7 +2,10 @@
 
 A ~60-minute practical exercise (created with the use of claude.ai) for graduate bioinformatics students. Students audit a deliberately flawed RNA-seq analysis for violations of statistical rigor, software engineering best practices, and FAIR data principles, then propose concrete fixes.
 
-Companion repository (has the data files and code to audit): https://github.com/mitreacristina/RNAseq_analysis
+Companion repository (has the data files and code to audit): 
+
+https://github.com/mitreacristina/RNAseq_analysis
+
 ---
 
 ### Files
