@@ -185,11 +185,11 @@ Rather than simply writing an environment file, answer the following:
 First, a future version of DESeq2 could change defaults for dispersion estimation, independent filtering, or result formatting, which could change adjusted p-values or output columns without making the script obviously fail. Second, a future version of readr, utils, or tibble/data.frame handling could change how sample IDs, row names, or strings are imported, causing the metadata and count matrix to misalign silently.
 
 2. Write a minimal `environment.yml` (Python/Conda) or `renv` initialization (R) pinning at least 5 relevant packages to specific versions.
-# Initialize a project-local R environment
+#### Initialize a project-local R environment
 install.packages("renv")
 renv::init()
 
-# Install required packages
+####  Install required packages
 install.packages(c(
   "BiocManager",
   "here",
@@ -203,7 +203,7 @@ BiocManager::install(c(
   "RnaSeqSampleSize"
 ))
 
-# Record exact package versions in renv.lock
+####  Record exact package versions in renv.lock
 renv::snapshot()
 
 3. In one sentence: when is a pinned environment file alone *not* sufficient for full reproducibility, and what additional tool addresses this?
@@ -243,10 +243,10 @@ List at least **three distinct sources of bias or confounding** present in this 
 The methods note that both authors are from the same lab and share the same clinical specialty (oncology). Answer both parts:
 
 1. **Confirmation bias:** How does same-lab authorship increase the risk of confirmation bias, and what is one structural safeguard that can be put in place at the analysis stage?
-Same-lab authorship increases the risk of confirmation bias because both authors may share the same assumptions about the disease, the dataset, and what counts as a convincing result. A structural safeguard would be to use a blinded or pre-registered analysis plan, where filtering rules, statistical models, and candidate-selection criteria are finalized before inspecting differential expression results.
+- Same-lab authorship increases the risk of confirmation bias because both authors may share the same assumptions about the disease, the dataset, and what counts as a convincing result. A structural safeguard would be to use a blinded or pre-registered analysis plan, where filtering rules, statistical models, and candidate-selection criteria are finalized before inspecting differential expression results.
 
 2. **Domain blind spots:** What type of expertise is missing from this two-person oncology team that would have caught the core statistical flaw in this script, and how would you recruit that expertise at the study design phase?
-The missing expertise is statistical genomics or computational biology, especially someone familiar with RNA-seq count models, multiple testing, and reproducible pipelines. I would recruit a biostatistician or bioinformatics methods collaborator during the study design phase, before sequencing, so they can help define sample size, randomization, metadata, batch structure, and the differential expression model.
+- The missing expertise is statistical genomics or computational biology, especially someone familiar with RNA-seq count models, multiple testing, and reproducible pipelines. I would recruit a biostatistician or bioinformatics methods collaborator during the study design phase, before sequencing, so they can help define sample size, randomization, metadata, batch structure, and the differential expression model.
 ---
 
 ### Step 4 — Power Calculation & Design Proposal *(~8 min)*
@@ -393,7 +393,7 @@ Write exactly **5 bullet points** describing an improved study design, one per c
 - Team diversity: Add collaborators that have a strong background in statistics and computational reproducibility to the study design stage, because their perspectives wouldve likely caught the t-test, FDR, and pipeline issues before publication; this does not eliminate the need for external validation in an independent cohort.
 - FAIR: Deposit raw FASTQ files and processed count matrices in GEO or SRA and archive the analysis release on Zenodo, because this makes the data findable, accessible, and citable; this does not by itself ensure that the metadata are complete or biologically balanced.
 - Bias/confounding: Randomize tumor and normal samples across sequencing runs and include batch in the design formula, because this prevents year or sequencing run from masquerading as tumor-normal biology; it does not remove all possible confounders, such as institution-level or demographic bias.
-- 
+- Software engineering: Use renv with an RStudio Project and testthat checks, because this makes the R environment reproducible and helps catch problems like mismatched sample IDs, missing metadata columns, or broken file paths; this does not fix flaws in the biological study design itself.
 Principles to address (one each): **statistics · software engineering · FAIR · bias/confounding · team diversity**
 
 > Python tools to draw from: Snakemake, Zenodo, Docker, GEO, `pydeseq2`, `pytest`, DVC, OSF  
