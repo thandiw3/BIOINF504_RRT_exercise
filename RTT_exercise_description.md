@@ -233,10 +233,10 @@ List at least **three distinct sources of bias or confounding** present in this 
 2. The **specific claim in the methods excerpt** that is undermined — do not write generic answers like "it threatens validity"
 3. One concrete **mitigation strategy** with a named tool or approach
 
-1. Samples collected in 2018 were processed together and samples collected in 2022 were processed together. This undermines the claim that observed expression differences are caused by tumor-normal status because sequencing year or library preparation batch could be driving the signal. A concrete mitigation would be to randomize tumor and normal samples across library preparation batches and include batch as a covariate in a DESeq2 or pydeseq2 design formula, such as ~ batch + condition.
-2. Three tumor samples from Patient_01 were re-sequenced and included as separate entries. This undermines the claim that the study has 20 independent samples because resequenced samples from the same patient are technical replicates, not new biological individuals. A concrete mitigation would be to collapse technical replicates using a tool such as DESeq2’s collapseReplicates() or to model patient identity explicitly.
-3. All patients were male, aged 55–70, and recruited at a single institution. This undermines any broad claim that the tumor-normal signature generalizes across patient populations. A concrete mitigation would be to recruit a multi-institution cohort with sex, age, ancestry, and clinical covariates recorded in a structured metadata file.
-4. The methods say that the top 12 candidate genes were selected after seeing the data. This undermines the claim that these genes were hypothesis-driven candidates because the selection was post-hoc. A concrete mitigation would be to pre-register candidate selection rules on OSF or define candidates using pre-specified FDR and effect-size thresholds.
+- Samples collected in 2018 were processed together and samples collected in 2022 were processed together. This undermines the claim that observed expression differences are caused by tumor-normal status because sequencing year or library preparation batch could be driving the signal. A concrete mitigation would be to randomize tumor and normal samples across library preparation batches and include batch as a covariate in a DESeq2 or pydeseq2 design formula, such as ~ batch + condition.
+- Three tumor samples from Patient_01 were re-sequenced and included as separate entries. This undermines the claim that the study has 20 independent samples because resequenced samples from the same patient are technical replicates, not new biological individuals. A concrete mitigation would be to collapse technical replicates using a tool such as DESeq2’s collapseReplicates() or to model patient identity explicitly.
+- All patients were male, aged 55–70, and recruited at a single institution. This undermines any broad claim that the tumor-normal signature generalizes across patient populations. A concrete mitigation would be to recruit a multi-institution cohort with sex, age, ancestry, and clinical covariates recorded in a structured metadata file.
+- The methods say that the top 12 candidate genes were selected after seeing the data. This undermines the claim that these genes were hypothesis-driven candidates because the selection was post-hoc. A concrete mitigation would be to pre-register candidate selection rules on OSF or define candidates using pre-specified FDR and effect-size thresholds.
 
 #### Task 3C — Team composition
 
@@ -246,7 +246,7 @@ The methods note that both authors are from the same lab and share the same clin
 Same-lab authorship increases the risk of confirmation bias because both authors may share the same assumptions about the disease, the dataset, and what counts as a convincing result. A structural safeguard would be to use a blinded or pre-registered analysis plan, where filtering rules, statistical models, and candidate-selection criteria are finalized before inspecting differential expression results.
 
 2. **Domain blind spots:** What type of expertise is missing from this two-person oncology team that would have caught the core statistical flaw in this script, and how would you recruit that expertise at the study design phase?
-
+The missing expertise is statistical genomics or computational biology, especially someone familiar with RNA-seq count models, multiple testing, and reproducible pipelines. I would recruit a biostatistician or bioinformatics methods collaborator during the study design phase, before sequencing, so they can help define sample size, randomization, metadata, batch structure, and the differential expression model.
 ---
 
 ### Step 4 — Power Calculation & Design Proposal *(~8 min)*
@@ -378,10 +378,13 @@ print(math.ceil(float(n[0])))
 **Answer these questions:**
 
 1. What minimum n per group does `sample_size()` return with these parameters?
-
+- Using the RNA-seq-specific power calculation with RnaSeqSampleSize::sample_size(), the required sample size is approximately 20–25 samples per group. This is much larger than the sample size used in the scenario. Cohort A has only 6 tumor and 6 normal samples, and Cohort B has only 4 tumor and 4 normal samples. Therefore, the study is underpowered for transcriptome-wide differential expression after accounting for overdispersion and FDR correction.
+The t-test calculation gives 11 samples per group, but that is only the simplified worked example. It is not the correct final answer for RNA-seq because it assumes continuous normally distributed data and does not account for testing 18,000 genes.
 2. How does the answer change if you assume only 1% of genes are truly DE (m1 = 180)? What does this tell you about how sensitive the power estimate is to your assumptions?
+- If only 1% of genes are truly differentially expressed, meaning m1 = 180 instead of m1 = 900, the required sample size increases. This happens because there are fewer true biological signals to detect among the same 18,000 tests, so it becomes harder to find real differentially expressed genes while still controlling the false discovery rate.
+This shows that the power estimate is sensitive to the assumptions built into the calculation. If the expected number of truly DE genes is too optimistic, then the study may look more powered than it actually is. In a real RNA-seq study, assumptions about dispersion, mean count, fold change, FDR threshold, and the expected proportion of DE genes all strongly affect the final sample-size estimate
 3. The scenario uses n = 6 (Cohort A) and n = 4 (Cohort B). Beyond missing true DE genes, what is one additional scientific consequence of running an underpowered high-throughput study?
-
+- Beyond missing true differentially expressed genes, an underpowered high-throughput study can produce unstable and inflated effect-size estimates. This means that the genes that appear significant may look more strongly changed than they really are, simply because only the most extreme noisy results pass the threshold. As a result, researchers may prioritize the wrong genes for follow-up experiments, build a grant around weak signals, or report findings that do not replicate in a larger cohort.
 
 #### Task 4B — Redesign in 5 bullets
 
@@ -403,7 +406,7 @@ Principles to address (one each): **statistics · software engineering · FAIR �
 #### Task 5A — Reflection
 
 In 3–5 sentences: *Which single flaw in this study do you think is most common in published bioinformatics literature, and why is it so persistent?* Draw on at least one concept from the course. There is no single correct answer — we are looking for critical reasoning and specificity.
-The most common flaw in published bioinformatics literature is probably incomplete reproducibility rather than total absence of code. 
+- The most common flaw in published bioinformatics literature is probably incomplete reproducibility rather than total absence of code. 
 Many papers provide a script or notebook, but the analysis still depends on undocumented package versions, hardcoded paths, missing metadata, or manual choices that are not captured in the repository. 
 I think this happens because bioinformatics projects can develop through exploration, and the final paper presents the cleaned-up story rather than the full computational history. 
 From a reproducibility perspective, this is dangerous because a result can appear rigorous while still being difficult or impossible to regenerate exactly.
@@ -411,7 +414,7 @@ From a reproducibility perspective, this is dangerous because a result can appea
 #### Task 5B — Prioritization *(~7 min)*
 
 You have one week before your collaborator submits the grant. You cannot fix everything. **Choose the single most important flaw to address first.** In 3–5 sentences, defend your choice. Your answer must: (1) name the flaw, (2) explain what harm it causes if left unfixed, and (3) acknowledge the strongest counter-argument for fixing a different flaw instead.
-The single most important flaw to address first is the inappropriate statistical analysis, especially the use of raw t-tests without multiple testing correction.
+- The single most important flaw to address first is the inappropriate statistical analysis, especially the use of raw t-tests without multiple testing correction.
 If left unfixed, the claims made may be based on false positives, which means the follow-up grant could be built around genes that do not actually replicate. 
 The strongest counter-argument is that batch effects or pseudoreplication may be even more damaging because they can create systematic false signal before the statistical test is even applied. 
 However, fixing the differential expression model, FDR correction, and replicate handling together is the fastest way to determine whether there is any credible signal worth pursuing.
